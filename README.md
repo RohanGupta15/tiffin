@@ -66,14 +66,14 @@ You can use different Add-ons/Extensions for it
 You can run Tiffin in a Docker container, either with `docker run`, or with the included `docker-compose` file.
 
 #### Docker run
- 1. Clone this repo: `git clone https://github.com/RohanGupta15/Bento-homepage`
+ 1. Clone this repo: `git clone https://github.com/RohanGupta15/tiffin`
  2. Build the image: `docker build -t tiffin .`
  3. Run it with your config, changing the port mapping if needed: `docker run -d -p 80:80 -v <config.js location>:/usr/share/nginx/html/config.js tiffin`
 
 #### docker-compose
-  1. Clone this repo with `git clone https://github.com/RohanGupta15/Bento-homepage`
+  1. Clone this repo with `git clone https://github.com/RohanGupta15/tiffin`
   2. Edit port mappings, and provide a path to the config.js file in `docker-compose.yml`
-  3. `cd` into the cloned repo, then run `docker compose up -d --build` to start.
+  3. `cd tiffin`, then run `docker compose up -d --build` to start.
 
 ## 🎨 Customization
 
