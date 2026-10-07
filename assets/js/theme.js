@@ -1,63 +1,51 @@
 //  ┌┬┐┬ ┬┌─┐┌┬┐┌─┐
 //  │ ├─┤├┤ │││├┤
 //  ┴ ┴ ┴└─┘┴ ┴└─┘
-// Set theme based on Configurations and Preferences
+// Theme toggle. The initial theme is set in theme-init.js before paint.
+// Toggling saves an override; toggling back to what the OS wants clears it,
+// so the page follows the OS again.
 
-let darkTheme = localStorage.getItem('darkTheme');
-const themeToggle = document.querySelector('#themeButton');
-const bodyBackground = document.getElementById('#body');
+const themeButton = document.getElementById('themeButton');
 
-const enableDark = () => {
-	document.body.classList.add('darktheme');
-	localStorage.setItem('darkTheme', 'enabled');
-	themeToggle.innerHTML = `<i id="themeButton__icon" icon-name="sun"></i>`;
-	lucide.createIcons();
+const currentTheme = () => document.documentElement.dataset.theme;
+
+const renderThemeButton = () => {
+	const dark = currentTheme() === 'dark';
+	themeButton.replaceChildren(icon(dark ? 'sun' : 'moon', 18, 1.75));
+	themeButton.setAttribute('aria-label', dark ? 'Switch to light theme' : 'Switch to dark theme');
 };
 
-const disableDark = () => {
-	document.body.classList.remove('darktheme');
-	localStorage.setItem('darkTheme', null);
-	themeToggle.innerHTML = `<i id="themeButton__icon" icon-name="moon"></i>`;
-	lucide.createIcons();
+const applyTheme = (theme) => {
+	document.documentElement.dataset.theme = theme;
+	renderThemeButton();
 };
 
-if (darkTheme === 'enabled') {
-	document.body.classList.add('notransition');
-	enableDark();
-	document.body.classList.remove('notransition');
-} else {
-	disableDark();
-}
-
-themeToggle.addEventListener('click', () => {
-	darkTheme = localStorage.getItem('darkTheme');
-	if (darkTheme !== 'enabled') {
-		enableDark();
-	} else {
-		disableDark();
+const toggleTheme = () => {
+	const next = currentTheme() === 'dark' ? 'light' : 'dark';
+	try {
+		if (next === autoTheme()) localStorage.removeItem(THEME_KEY);
+		else localStorage.setItem(THEME_KEY, next);
+	} catch (e) {
+		// Storage unavailable; the toggle still works for this tab.
 	}
+	applyTheme(next);
+};
+
+themeButton.addEventListener('click', toggleTheme);
+
+// Follow OS changes live, unless the user has overridden it.
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+	if (!savedTheme()) applyTheme(autoTheme());
 });
 
-if (CONFIG.imageBackground) {
-	document.body.classList.add('withImageBackground');
-}
+// Another tab toggled the theme.
+window.addEventListener('storage', (e) => {
+	if (e.key === THEME_KEY) applyTheme(savedTheme() || autoTheme());
+});
 
-if (CONFIG.changeThemeByOS && CONFIG.autoChangeTheme) {
-	if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-		enableDark();
-	} else {
-		disableDark();
-	}
-}
+renderThemeButton();
 
-if (CONFIG.changeThemeByHour && CONFIG.autoChangeTheme && !CONFIG.changeThemeByOS) {
-	const date = new Date();
-	const hours = date.getHours() < 10 ? '0' + date.getHours().toString() : date.getHours().toString();
-	const minutes = date.getMinutes() < 10 ? '0' + date.getMinutes().toString() : date.getMinutes().toString();
-	const currentTime = hours + ':' + minutes;
-	if (currentTime >= CONFIG.hourDarkThemeActive) {
-		enableDark();
-	} else if (currentTime >= CONFIG.hourDarkThemeInactive) {
-		disableDark();
-	}
-}
+// Enable colour transitions only after the first paint, so loading never animates.
+requestAnimationFrame(() =>
+	requestAnimationFrame(() => document.documentElement.classList.add('theme-ready'))
+);

@@ -2,80 +2,95 @@
 <html lang="en">
 	<head>
 		<meta charset="UTF-8" />
-		<title>Bento</title>
-		<link rel=" shortcut icon" type="image/png" href="assets/icons/favicon.png" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="color-scheme" content="dark light" />
+		<title>New Tab</title>
+		<link rel="icon" type="image/svg+xml" href="assets/icons/tiffin.svg" />
+		<link rel="preload" href="assets/fonts/imbue.woff2" as="font" type="font/woff2" crossorigin />
 		<link rel="stylesheet" href="app.css" />
-		<script src="https://unpkg.com/lucide@latest"></script>
+
+		<!-- Config + theme run before first paint so there is no flash of the wrong theme -->
+		<script src="config.js"></script>
+		<script src="assets/js/theme-init.js"></script>
 	</head>
 
-	<!-- 
-      ╔╗ ╔═╗╔╗╔╔╦╗╔═╗
-      ╠╩╗║╣ ║║║ ║ ║ ║
-      ╚═╝╚═╝╝╚╝ ╩ ╚═╝
+	<!--
+      ╔╦╗╦╔═╗╔═╗╦╔╗╔
+       ║ ║╠╣ ╠╣ ║║║║
+       ╩ ╩╚  ╚  ╩╝╚╝
       -->
 
-	<body class="">
-		<button id="themeButton">
-			<i id="themeIcon" icon-name="moon"></i>
-		</button>
-		<div class="container">
-			<!-- Clock and Greetings  -->
-
-			<div class="timeBlock">
-				<div class="clock">
-					<div id="hour"></div>
-					<div id="separator"></div>
-					<div id="minutes"></div>
-				</div>
-				<div id="greetings"></div>
-			</div>
-
-			<!-- Date and Weather  -->
-
-			<div class="weatherBlock">
-				<div class="date">
-					<div id="month"></div>
-					<div id="day"></div>
-				</div>
-				<div class="weather">
-					<div class="weatherIcon">
-						<img src="assets/icons/OneDark/unknown.png" />
+	<body>
+		<div class="page">
+			<header class="hero rise" style="--i: 0">
+				<div class="hero__row">
+					<div class="hero__time">
+						<p class="eyebrow" id="date"></p>
+						<p class="clock" id="clock" aria-live="off">
+							<span id="hours"></span><span class="clock__colon">:</span><span id="minutes"></span><span class="clock__ampm" id="ampm"></span>
+						</p>
+						<h1 class="greeting" id="greeting"></h1>
 					</div>
-					<div class="weatherValue">
-						<p>- °<span class="g">c</span></p>
-					</div>
-					<div class="weatherDescription">
-						<p></p>
+
+					<div class="weather" id="weather" hidden>
+						<div class="weather__now">
+							<span class="weather__icon" id="weatherIcon"></span>
+							<span class="weather__temp" id="weatherTemp"></span>
+						</div>
+						<p class="weather__desc" id="weatherDesc"></p>
+						<p class="eyebrow" id="weatherMeta"></p>
 					</div>
 				</div>
+
+				<div class="day" aria-hidden="true">
+					<div class="day__track">
+						<div class="day__fill" id="dayFill"></div>
+						<div class="day__dot" id="dayDot"></div>
+					</div>
+					<p class="eyebrow" id="dayLabel"></p>
+				</div>
+			</header>
+
+			<div class="search rise" id="search" style="--i: 2">
+				<label class="search__box">
+					<span class="search__icon" id="searchIcon"></span>
+					<input
+						id="searchInput"
+						type="text"
+						autocomplete="off"
+						spellcheck="false"
+						role="combobox"
+						aria-expanded="false"
+						aria-controls="searchResults"
+						aria-label="Search the web or jump to a link"
+						placeholder="Search the web or jump to a link"
+					/>
+					<kbd class="search__key" id="searchKey">/</kbd>
+				</label>
+				<div class="search__results" id="searchResults" role="listbox" aria-label="Results" hidden></div>
 			</div>
 
-			<div class="linksBlock" id="linksBlock">
-				<div class="linksBlockLeft" id="linksBlockLeft"></div>
-				<div class="linksBlockRight" id="linksBlockRight"></div>
-			</div>
+			<main class="links" id="links"></main>
+
+			<footer class="footer">
+				<div class="footer__hints">
+					<span><kbd id="pinnedHint">1–6</kbd>open pinned</span>
+					<span><kbd>/</kbd>search</span>
+					<span><kbd>↑ ↓ ↵</kbd>pick a result</span>
+					<span><kbd>T</kbd>theme</span>
+				</div>
+				<button class="footer__theme" id="themeButton" type="button" aria-label="Switch theme"></button>
+			</footer>
 		</div>
 
-		<!-- Config  -->
-		<script src="config.js"></script>
-
-		<!-- Scripts  -->
+		<script src="assets/vendor/lucide.min.js"></script>
+		<script src="assets/js/util.js"></script>
 		<script src="assets/js/layout.js"></script>
-		<script src="assets/js/theme.js"></script>
-		<script src="assets/js/time.js"></script>
-		<script src="assets/js/greeting.js"></script>
+		<script src="assets/js/clock.js"></script>
 		<script src="assets/js/weather.js"></script>
-
-		<!-- Generators  -->
-		<script src="assets/js/buttons.js"></script>
-		<script src="assets/js/lists.js"></script>
-
-		<!-- Icons -->
-		<script>
-			lucide.createIcons();
-		</script>
+		<script src="assets/js/theme.js"></script>
+		<script src="assets/js/search.js"></script>
 	</body>
 
-	<!-- Developed and designed by Miguel Ávila: -->
-	<!-- https://avila.sh-->
+	<!-- Originally developed and designed by Miguel Ávila: https://avila.sh -->
 </html>
