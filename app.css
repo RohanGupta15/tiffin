@@ -395,6 +395,17 @@ kbd {
 	border-radius: var(--radius-box) var(--radius-box) 0 0;
 }
 
+/* Open: the box and its results read as one outlined panel, so the soft ring would cut across the join */
+.search.is-open .search__box:focus-within {
+	border-bottom-color: var(--hair);
+	box-shadow: var(--shadow);
+}
+
+.search.is-open .search__results {
+	border-color: var(--accent);
+	border-top-color: var(--hair);
+}
+
 .search__icon {
 	display: flex;
 }
