@@ -23,9 +23,11 @@ Tiffin is the next step for [Bento](https://github.com/migueravila/Bento) by Mig
 
 - **Typography first ("Couture")**: Imbue, a condensed Didone, for the clock; Petrona Italic for the greeting; Onest for the interface; Reddit Mono for labels. All fonts are bundled (SIL Open Font License), so nothing loads from the network.
 - **Day weight**: the clock's variable weight follows the day, thinnest at 1 am and heaviest at 1 pm.
-- **Keyboard driven**: `/` to search, `1`–`9` to open pinned tiles, `↑ ↓ ↵` to pick a result, `T` to switch theme.
+- **Keyboard driven**: `/` to search, `1`–`9` to open pinned tiles, arrow keys to move across everything, `T` to switch theme, `?` for every shortcut.
+- **Edit in place**: press `E` (or the pencil) to edit, add, delete and drag-reorder tiles, lists and links, with a visual icon picker and undo. Your links sync with Firefox Sync.
+- **Settings on the page**: press `,` (or the gear) for your name, weather city and units, clock, layout, theme and accent.
 - **Search that jumps**: type a link's name to open it, type an address to go there, or press Enter to search with Firefox's default engine.
-- **Weather with no API key** from [Open-Meteo](https://open-meteo.com), cached so new tabs show it instantly.
+- **Optional weather** from [Open-Meteo](https://open-meteo.com) for a city you choose, cached so new tabs show it instantly. Firefox asks before the city is shared; see [PRIVACY.md](PRIVACY.md).
 - **Dark/Light** follows your OS live; the toggle overrides it, and toggling back hands control back to the OS. No flash of the wrong theme.
 - **Layouts**: `bento`, `lists` or `buttons`. Lists take any number of links.
 - **Day progress** line, 12/24-hour clock, optional frosted wallpaper mode.
@@ -42,6 +44,8 @@ Tiffin is the next step for [Bento](https://github.com/migueravila/Bento) by Mig
    - Click the menu next to Homepage and new windows and choose to show custom URLs and add your `Github Pages link`
 
 ### 🦊 As a Firefox Extension (new tab + home page)
+
+Install Tiffin from [addons.mozilla.org](https://addons.mozilla.org/firefox/addon/tiffin/). To work on it locally:
 
 Tiffin is a Firefox WebExtension (`manifest.json`) that replaces the new tab and home page.
 
@@ -77,11 +81,12 @@ You can run Tiffin in a Docker container, either with `docker run`, or with the 
 
 ## 🎨 Customization
 
-Everything lives in `config.js`. While `npm start` is running, saving a file reloads the extension.
+Most people never need this: links are edited on the page (`E`) and everything else is in settings (`,`). `config.js` holds the defaults a new install starts with; once someone saves a setting or edits a link, their choice wins. While `npm start` is running, saving a file reloads the extension.
 
 | Option | What it does |
 | --- | --- |
-| `name` | Shown in the greeting. Leave `''` to drop it. |
+| `name` | Shown in the greeting. `''` asks for it on the first new tab. |
+| `showGreeting` | `false` hides the greeting line. |
 | `greetingMorning` / `Afternoon` / `Evening` / `Night` | Greeting text by time of day. |
 | `twelveHourFormat` | `true` for a 12-hour clock with am/pm. |
 | `dayWeight` / `dayWeightRange` | Clock weight follows the time of day, between `[lightest, heaviest]` (100–900). `false` keeps it fixed. |
@@ -89,11 +94,10 @@ Everything lives in `config.js`. While `npm start` is running, saving a file rel
 | `imageBackground` | Use `assets/background.jpg` as a wallpaper with frosted tiles. |
 | `bentoLayout` | `'bento'` (tiles + lists), `'lists'` (all lists), `'buttons'` (all tiles). |
 | `theme` | `'auto'` follows the OS; `'dark'` or `'light'` forces one. |
-| `accentDark` / `accentLight` | The single accent colour (clock colon, focus rings, day dot) per theme. |
+| `accent` | `'indigo'`, `'teal'`, `'green'`, `'amber'`, `'rose'` or `'graphite'`; each has a light and a dark shade. |
 | `searchUrl` | Fallback search URL (`%s` = query) when Tiffin runs as a plain web page rather than the extension. |
 | `weatherUnit` | `'C'` or `'F'`. |
-| `trackLocation` | Use the browser's location for weather; otherwise `defaultLatitude` / `defaultLongitude`. |
-| `locationName` | Label under the weather. `''` hides it. |
+| `city` / `latitude` / `longitude` | Weather location; weather stays hidden while these are empty. Usually set from settings. |
 
 ### 🏷️ Tiles
 
@@ -102,7 +106,7 @@ Everything lives in `config.js`. While `npm start` is running, saving a file rel
 ```js
 firstButtonsContainer: [
 	{ name: 'GitHub', icon: 'github', link: 'https://github.com/' },
-	{ name: 'Mail', icon: 'mail', link: 'https://mail.protonmail.com/' },
+	{ name: 'Gmail', icon: 'mail', link: 'https://mail.google.com/' },
 ],
 ```
 

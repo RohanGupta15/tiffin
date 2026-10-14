@@ -1,8 +1,8 @@
 // ┬ ┬┌─┐┌─┐┌┬┐┬ ┬┌─┐┬─┐
 // │││├┤ ├─┤ │ ├─┤├┤ ├┬┘
 // └┴┘└─┘┴ ┴ ┴ ┴ ┴└─┘┴└─
-// Weather from Open-Meteo (free, no API key). Cached for 30 minutes so new tabs
-// show it instantly instead of waiting on the network.
+// Weather from Open-Meteo (free, no API key) for the city chosen in settings.
+// Cached for 30 minutes so new tabs show it instantly instead of waiting on the network.
 
 const WEATHER_KEY = 'bento-weather';
 const WEATHER_MAX_AGE = 30 * 60 * 1000;
@@ -33,7 +33,7 @@ const renderWeather = (data) => {
 	document.getElementById('weatherTemp').textContent = `${Math.round(data.temp)}°`;
 	document.getElementById('weatherDesc').textContent = text;
 	document.getElementById('weatherMeta').textContent = [
-		CONFIG.locationName,
+		CONFIG.city,
 		`H ${Math.round(data.max)}° L ${Math.round(data.min)}°`,
 	]
 		.filter(Boolean)
@@ -44,7 +44,8 @@ const renderWeather = (data) => {
 const readWeatherCache = () => {
 	try {
 		const cached = JSON.parse(localStorage.getItem(WEATHER_KEY));
-		return cached && cached.unit === CONFIG.weatherUnit ? cached : null;
+		const same = cached && cached.unit === CONFIG.weatherUnit && cached.lat === CONFIG.latitude && cached.lon === CONFIG.longitude;
+		return same ? cached : null;
 	} catch (e) {
 		return null;
 	}
@@ -70,6 +71,8 @@ const fetchWeather = async (latitude, longitude) => {
 		max: json.daily.temperature_2m_max[0],
 		min: json.daily.temperature_2m_min[0],
 		unit: CONFIG.weatherUnit,
+		lat: latitude,
+		lon: longitude,
 		at: Date.now(),
 	};
 	try {
@@ -80,25 +83,25 @@ const fetchWeather = async (latitude, longitude) => {
 	return data;
 };
 
-const getPosition = () =>
-	new Promise((resolve) => {
-		const fallback = () => resolve([CONFIG.defaultLatitude, CONFIG.defaultLongitude]);
-		if (!CONFIG.trackLocation || !navigator.geolocation) return fallback();
-		navigator.geolocation.getCurrentPosition(
-			(pos) => resolve([pos.coords.latitude.toFixed(3), pos.coords.longitude.toFixed(3)]),
-			fallback,
-			{ timeout: 8000, maximumAge: WEATHER_MAX_AGE }
-		);
-	});
+const hasCity = () => Number.isFinite(CONFIG.latitude) && Number.isFinite(CONFIG.longitude);
+
+// The city's coordinates go to Open-Meteo only after the user agreed in Firefox's
+// optional "location" data permission (asked when they first search for a city).
+const hasLocationConsent = async () => {
+	if (typeof browser === 'undefined' || !browser.permissions) return true; // plain web page
+	const granted = await browser.permissions.getAll();
+	return !granted.data_collection || granted.data_collection.includes('locationInfo');
+};
 
 (async () => {
+	if (!hasCity()) return;
 	const cached = readWeatherCache();
 	if (cached) renderWeather(cached);
 	if (cached && Date.now() - cached.at < WEATHER_MAX_AGE) return;
 
 	try {
-		const [latitude, longitude] = await getPosition();
-		renderWeather(await fetchWeather(latitude, longitude));
+		if (!(await hasLocationConsent())) return;
+		renderWeather(await fetchWeather(CONFIG.latitude, CONFIG.longitude));
 	} catch (err) {
 		console.error('Weather unavailable:', err);
 	}

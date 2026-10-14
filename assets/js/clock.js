@@ -44,6 +44,7 @@ const renderClock = () => {
 	document.getElementById('date').textContent = `${weekday} · ${dayMonth}`;
 
 	const greeting = greetingFor(now.getHours()).trim();
+	document.getElementById('greeting').hidden = CONFIG.showGreeting === false;
 	document.getElementById('greeting').textContent = CONFIG.name
 		? `${greeting} ${CONFIG.name}.`
 		: greeting.replace(/[,\s]*$/, '.');

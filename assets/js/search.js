@@ -126,7 +126,10 @@ const clearSearch = () => {
 searchInput.addEventListener('input', updateSearch);
 
 searchInput.addEventListener('keydown', (e) => {
-	if (e.key === 'ArrowDown' && results.length) {
+	if (e.key === 'ArrowDown' && !results.length) {
+		e.preventDefault();
+		focusLinks();
+	} else if (e.key === 'ArrowDown' && results.length) {
 		e.preventDefault();
 		active = (active + 1) % results.length;
 		renderResults();
@@ -153,17 +156,45 @@ searchInput.addEventListener('focus', updateSearch);
 
 document.getElementById('searchIcon').append(icon('search', 18, 1.75));
 
-// Page shortcuts: / search, 1–9 pinned tiles, T theme.
+// Page shortcuts: / search, 1–9 pinned tiles, T theme, E edit.
 document.addEventListener('keydown', (e) => {
-	if (e.target === searchInput || e.ctrlKey || e.metaKey || e.altKey) return;
-	if (e.target instanceof HTMLElement && e.target.isContentEditable) return;
+	if (document.querySelector('dialog[open]')) return;
+	if (e.target instanceof HTMLElement && (e.target.isContentEditable || e.target.matches('input, textarea, select'))) return;
+	if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z' && undoFn) {
+		e.preventDefault();
+		undo();
+		return;
+	}
+	if (e.ctrlKey || e.metaKey || e.altKey) return;
 
 	if (e.key === '/') {
 		e.preventDefault();
 		searchInput.focus();
-	} else if (/^[1-9]$/.test(e.key) && PINNED[Number(e.key) - 1]) {
+	} else if (e.key === ',') {
+		e.preventDefault();
+		openSettings();
+	} else if (e.key === '?') {
+		e.preventDefault();
+		document.getElementById('shortcuts').showModal();
+	} else if (e.key === 'e' || e.key === 'E') {
+		setEditing(!editing);
+	} else if (editing && e.key === 'Escape') {
+		setEditing(false);
+	} else if (editing && (e.key === 'n' || e.key === 'N')) {
+		e.preventDefault();
+		addFromFocus();
+	} else if (!editing && /^[1-9]$/.test(e.key) && PINNED[Number(e.key) - 1]) {
 		openLink(PINNED[Number(e.key) - 1].link);
 	} else if (e.key === 't' || e.key === 'T') {
 		toggleTheme();
 	}
 });
+
+// Firefox puts the cursor in the address bar on a new tab; say how to reach the page.
+const focusHint = document.getElementById('focusHint');
+const syncFocusHint = () => (focusHint.hidden = document.hasFocus());
+window.addEventListener('focus', syncFocusHint);
+window.addEventListener('blur', syncFocusHint);
+syncFocusHint();
+
+document.getElementById('shortcutsButton').addEventListener('click', () => document.getElementById('shortcuts').showModal());
