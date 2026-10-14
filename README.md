@@ -1,87 +1,101 @@
 <p align="center">
-  <img src="assets/icons/tiffin.svg" alt="Tiffin" width="88" />
+  <img src="assets/icons/tiffin.svg" alt="" width="88" />
 </p>
 
 <h1 align="center">Tiffin</h1>
 
 <p align="center">
   <em>Bento, one tier up.</em><br />
-  A typographic new tab and home page for Firefox.
+  A fast, keyboard-first new tab and home page for Firefox.
 </p>
 
-<br />
+<p align="center">
+  <strong>Coming soon to addons.mozilla.org.</strong> Until then, <a href="#run-it-locally">run it locally</a>.
+</p>
 
-Tiffin is the next step for [Bento](https://github.com/migueravila/Bento) by Miguel Ávila. Bento gave it the layout. Tiffin stacks a tier on top with a type-led redesign ("Couture"), a clock whose weight follows the day, search that jumps to your links, and a native Firefox extension that replaces the new tab and home page.
+<p align="center">
+  <img src="docs/screenshots/1-home.png" alt="Tiffin in the light theme: a large clock, a greeting, weather for Lisbon, a search box, six pinned sites and two lists of links" width="49%" />
+  <img src="docs/screenshots/2-dark.png" alt="Tiffin in the dark theme with a teal accent" width="49%" />
+</p>
 
-## 👇 Index
-- [✨ Features](#-features)
-- [🚀 Usage](#-usage)
-- [🎨 Customization](#-customization)
-- [🍱 Credits](#-credits)
+## From Bento to Tiffin
 
-## ✨ Features
+Tiffin began as a fork of [Bento](https://github.com/migueravila/Bento), the minimalist start page by [Miguel Ávila](https://github.com/migueravila). Bento's idea is a good one: your most-used sites in tidy tiles and lists, arranged like the compartments of a bento box, all set up from one readable config file. Tiffin keeps that idea and the layouts that come with it, and owes its starting point to Miguel and Bento's contributors.
 
-- **Typography first ("Couture")**: Imbue, a condensed Didone, for the clock; Petrona Italic for the greeting; Onest for the interface; Reddit Mono for labels. All fonts are bundled (SIL Open Font License), so nothing loads from the network.
-- **Day weight**: the clock's variable weight follows the day, thinnest at 1 am and heaviest at 1 pm.
-- **Keyboard driven**: `/` to search, `1`–`9` to open pinned tiles, arrow keys to move across everything, `T` to switch theme, `?` for every shortcut.
-- **Edit in place**: press `E` (or the pencil) to edit, add, delete and drag-reorder tiles, lists and links, with a visual icon picker and undo. Your links sync with Firefox Sync.
-- **Settings on the page**: press `,` (or the gear) for your name, weather city and units, clock, layout, theme and accent.
-- **Search that jumps**: type a link's name to open it, type an address to go there, or press Enter to search with Firefox's default engine.
-- **Optional weather** from [Open-Meteo](https://open-meteo.com) for a city you choose, cached so new tabs show it instantly. Firefox asks before the city is shared; see [PRIVACY.md](PRIVACY.md).
-- **Dark/Light** follows your OS live; the toggle overrides it, and toggling back hands control back to the OS. No flash of the wrong theme.
-- **Layouts**: `bento`, `lists` or `buttons`. Lists take any number of links.
-- **Day progress** line, 12/24-hour clock, optional frosted wallpaper mode.
+A tiffin is a stacked lunchbox, a bento with tiers. Tiffin adds a tier: it turns Bento into a Firefox extension that people who never open a config file can install, personalise and use with the keyboard alone.
 
-## 🚀 Usage
+**What Tiffin keeps from Bento:** the bento, lists and tiles layouts; pinned tiles and titled lists; Lucide icons; light and dark themes; a 12/24-hour clock and greetings; `config.js` for anyone who wants it; the GPL-3.0 licence.
 
-### 🏡 As Home Page
+**What changed:**
 
-1. Fork this repo
-2. Enable the Github Pages service `Settings → GitHub Pages → Source [master branch] → Save`
-3. Set it as Home Page:
-   - Click the menu button. and select Options. Preferences.
-   - Click the Home panel.
-   - Click the menu next to Homepage and new windows and choose to show custom URLs and add your `Github Pages link`
+| | Bento | Tiffin |
+| --- | --- | --- |
+| Installing | Host it yourself (GitHub Pages or Docker), then point a new-tab add-on at it | A Firefox extension that replaces the new tab and home page |
+| Editing links | Edit `config.js` | On the page: press `E`, click anything, drag to reorder, undo with `Ctrl+Z` |
+| Icons | Type a Lucide icon name | Searchable icon picker with suggestions |
+| Settings | Edit `config.js` | Settings panel (`,`) for name, weather, clock, layout, theme and accent |
+| Across devices | Copy the config yourself | Links and settings sync with Firefox Sync, with export and import |
+| Weather | OpenWeatherMap API key, plus latitude and longitude typed in | Search a city; no key; Firefox asks before the city is shared |
+| Keyboard | No shortcuts | `/` search, `1`–`9` pinned sites, arrows across everything, `?` for every shortcut |
+| Search | None | Searches the web or jumps straight to one of your links |
+| Type and motion | Open Sans, loaded from Google Fonts | Four bundled typefaces (nothing loads from the network), a clock whose weight follows the day, quick motion that respects reduced-motion settings |
+| Screen sizes | Adapts to the window's width | Adapts to width and height, so it fits one screen without scrolling |
+| Privacy | Self-hosted; weather calls OpenWeatherMap with your key | No account, no analytics; [privacy policy](PRIVACY.md) |
 
-### 🦊 As a Firefox Extension (new tab + home page)
+## Features
 
-Install Tiffin from [addons.mozilla.org](https://addons.mozilla.org/firefox/addon/tiffin/). To work on it locally:
+- **Edit in place.** Press `E` or the pencil to edit, add, delete and drag tiles, lists and links. Deleting shows Undo.
+- **Settings on the page.** Press `,` or the gear for your name, weather city and units, clock, layout, theme and accent colour.
+- **Keyboard first.** `/` searches, `1`–`9` open pinned sites, arrow keys move across tiles, lists, search and footer, `T` switches theme, `?` lists every shortcut.
+- **Search that jumps.** Type a link's name to open it, an address to go there, or anything else to search with Firefox's default engine.
+- **Optional weather** from [Open-Meteo](https://open-meteo.com) for a city you choose, cached so new tabs show it instantly.
+- **Type-led design.** Imbue for the clock, Petrona Italic for the greeting, Onest for the interface, Reddit Mono for labels, all bundled so nothing loads from the network.
+- **Day weight.** The clock is thinnest at 1 am and heaviest at 1 pm.
+- **Light and dark** follow your system, with six accent colours. No flash of the wrong theme.
 
-Tiffin is a Firefox WebExtension (`manifest.json`) that replaces the new tab and home page.
+<p align="center">
+  <img src="docs/screenshots/3-edit-icons.png" alt="Edit mode: dashed tiles, and a dialog editing GitHub with the icon picker open" width="49%" />
+  <img src="docs/screenshots/4-settings.png" alt="The settings panel in the dark theme" width="49%" />
+</p>
+
+## Install
+
+### Firefox
+
+Tiffin is coming to addons.mozilla.org. Until it's listed, load it from this repo:
+
+1. Clone it: `git clone https://github.com/RohanGupta15/tiffin`
+2. In Firefox, open `about:debugging#/runtime/this-firefox`.
+3. Click **Load Temporary Add-on…** and pick `manifest.json`.
+
+A temporary add-on is removed when Firefox restarts.
+
+### Other browsers
+
+Tiffin also runs as a plain web page. Put the folder on any static host, then point a new-tab add-on at it:
+
+- Firefox: [Custom New Tab Page](https://addons.mozilla.org/firefox/addon/custom-new-tab-page/); turn on "Force links to open in the top frame".
+- Chromium (Brave, Vivaldi, Chrome): [Custom New Tab URL](https://chrome.google.com/webstore/detail/custom-new-tab-url/mmjbdbjnoablegbkcklggeknkfcjkjia)
+
+As a web page, links and settings are saved in that browser only, and searches use the `searchUrl` in `config.js`.
+
+## Run it locally
 
 ```bash
 npm install
-npm start        # launches a fresh Firefox profile with Tiffin loaded; auto-reloads on file changes
+npm start        # a fresh Firefox profile with Tiffin loaded; reloads when files change
+npm test         # unit tests
 npm run lint     # validate the extension
 npm run build    # zip into web-ext-artifacts/
 ```
 
-To use it in your everyday Firefox without publishing, open `about:debugging#/runtime/this-firefox` → **Load Temporary Add-on…** → pick `manifest.json` (removed on restart). For a permanent install, sign the zip as an unlisted add-on on [addons.mozilla.org](https://addons.mozilla.org/developers/).
+Firefox can keep an old copy of `app.css` after reloading a temporary add-on. If a style change doesn't show, restart Firefox.
 
-### ➕ As New Tab
+## Make it yours
 
-You can use different Add-ons/Extensions for it
+Most people never need a file: edit links on the page with `E`, change everything else in settings with `,`, and press `?` for shortcuts.
 
-- If you use Firefox: [Custom New Tab Page](https://addons.mozilla.org/en-US/firefox/addon/custom-new-tab-page/?src=search) and make sure you enable "Force links to open in the top frame (experimental)" in the extension's preferences page.
-- If you use Chromium (Brave, Vivaldi, Chrome): [Custom New Tab URL](https://chrome.google.com/webstore/detail/custom-new-tab-url/mmjbdbjnoablegbkcklggeknkfcjkjia)
-
-### 🐬 In a Docker Container
-
-You can run Tiffin in a Docker container, either with `docker run`, or with the included `docker-compose` file.
-
-#### Docker run
- 1. Clone this repo: `git clone https://github.com/RohanGupta15/tiffin`
- 2. Build the image: `docker build -t tiffin .`
- 3. Run it with your config, changing the port mapping if needed: `docker run -d -p 80:80 -v <config.js location>:/usr/share/nginx/html/config.js tiffin`
-
-#### docker-compose
-  1. Clone this repo with `git clone https://github.com/RohanGupta15/tiffin`
-  2. Edit port mappings, and provide a path to the config.js file in `docker-compose.yml`
-  3. `cd tiffin`, then run `docker compose up -d --build` to start.
-
-## 🎨 Customization
-
-Most people never need this: links are edited on the page (`E`) and everything else is in settings (`,`). `config.js` holds the defaults a new install starts with; once someone saves a setting or edits a link, their choice wins. While `npm start` is running, saving a file reloads the extension.
+`config.js` sets the defaults a new install starts with. Once someone edits a link or saves a setting, their choice wins.
 
 | Option | What it does |
 | --- | --- |
@@ -90,47 +104,43 @@ Most people never need this: links are edited on the page (`E`) and everything e
 | `greetingMorning` / `Afternoon` / `Evening` / `Night` | Greeting text by time of day. |
 | `twelveHourFormat` | `true` for a 12-hour clock with am/pm. |
 | `dayWeight` / `dayWeightRange` | Clock weight follows the time of day, between `[lightest, heaviest]` (100–900). `false` keeps it fixed. |
-| `openInNewTab` | Open links (and searches) in a new tab instead of this one. |
+| `openInNewTab` | Open links and searches in a new tab. |
 | `imageBackground` | Use `assets/background.jpg` as a wallpaper with frosted tiles. |
-| `bentoLayout` | `'bento'` (tiles + lists), `'lists'` (all lists), `'buttons'` (all tiles). |
-| `theme` | `'auto'` follows the OS; `'dark'` or `'light'` forces one. |
-| `accent` | `'indigo'`, `'teal'`, `'green'`, `'amber'`, `'rose'` or `'graphite'`; each has a light and a dark shade. |
-| `searchUrl` | Fallback search URL (`%s` = query) when Tiffin runs as a plain web page rather than the extension. |
+| `bentoLayout` | `'bento'` (tiles and lists), `'lists'` (lists only), `'buttons'` (tiles only). |
+| `theme` | `'auto'` follows the system; `'dark'` or `'light'` forces one. |
+| `accent` | `'indigo'`, `'teal'`, `'green'`, `'amber'`, `'rose'` or `'graphite'`. |
+| `searchUrl` | Search URL (`%s` is the query) when Tiffin runs as a web page. |
 | `weatherUnit` | `'C'` or `'F'`. |
-| `city` / `latitude` / `longitude` | Weather location; weather stays hidden while these are empty. Usually set from settings. |
+| `city` / `latitude` / `longitude` | Weather location. Weather stays hidden while these are empty. |
 
-### 🏷️ Tiles
-
-`firstButtonsContainer` (and `secondButtonsContainer` for the `buttons` layout). Icons are any [Lucide](https://lucide.dev) name from v0.469. The first nine tiles get the `1`–`9` shortcuts.
+**Starter links.** `firstButtonsContainer` holds the pinned tiles and `firstlistsContainer` the lists; the `second…` versions add more for the tiles-only and lists-only layouts. Icons are [Lucide](https://lucide.dev) names from v0.469, and the first nine tiles get the `1`–`9` shortcuts.
 
 ```js
 firstButtonsContainer: [
 	{ name: 'GitHub', icon: 'github', link: 'https://github.com/' },
-	{ name: 'Gmail', icon: 'mail', link: 'https://mail.google.com/' },
 ],
-```
-
-### 📑 Lists
-
-`firstlistsContainer` (and `secondListsContainer` for the `lists` layout). Each list has a title, an icon and any number of links.
-
-```js
 firstlistsContainer: [
 	{
-		title: 'Listen',
-		icon: 'music',
-		links: [
-			{ name: 'Inspirational', link: 'https://www.youtube.com/' },
-			{ name: 'Classic', link: 'https://www.youtube.com/' },
-		],
+		title: 'Read',
+		icon: 'book-open',
+		links: [{ name: 'Hacker News', link: 'https://news.ycombinator.com/' }],
 	},
 ],
 ```
 
-### 💛 Colors and type
+**Colours and type.** Colours are CSS variables at the top of `app.css`: the light theme on `:root`, dark on `:root[data-theme='dark']`. Fonts live in `assets/fonts/`.
 
-Colours are CSS variables at the top of `app.css`: light theme on `:root`, dark on `:root[data-theme='dark']`. Fonts are declared with `@font-face` at the very top and live in `assets/fonts/` (SIL Open Font License).
+## Privacy
 
-## 🍱 Credits
+Tiffin has no account, analytics or tracking. Links and settings stay in Firefox and sync only through your own Firefox account. Weather is off until you choose a city, and Firefox asks before the city is sent to Open-Meteo. Details in [PRIVACY.md](PRIVACY.md).
 
-Tiffin is built on [Bento](https://github.com/migueravila/Bento) by [Miguel Ávila](https://github.com/migueravila) and its contributors, and stays under the same [GPL-3.0](License) licence. Fonts: Imbue, Petrona, Onest and Reddit Mono (SIL Open Font License). Icons: [Lucide](https://lucide.dev). Weather: [Open-Meteo](https://open-meteo.com).
+## Credits
+
+- **[Bento](https://github.com/migueravila/Bento)** by [Miguel Ávila](https://github.com/migueravila) and [its contributors](https://github.com/migueravila/Bento/graphs/contributors): the layout, the idea and the code Tiffin grew from. If you like Tiffin, give Bento a star.
+- **Fonts**, all under the SIL Open Font License: [Imbue](https://fonts.google.com/specimen/Imbue), [Petrona](https://fonts.google.com/specimen/Petrona), [Onest](https://fonts.google.com/specimen/Onest), [Reddit Mono](https://fonts.google.com/specimen/Reddit+Mono).
+- **Icons:** [Lucide](https://lucide.dev), ISC licence.
+- **Weather:** [Open-Meteo](https://open-meteo.com).
+
+## Licence
+
+[GPL-3.0](License), the same as Bento.
