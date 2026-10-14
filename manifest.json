@@ -1,7 +1,7 @@
 {
 	"manifest_version": 3,
 	"name": "Tiffin",
-	"version": "2.0.0",
+	"version": "2.1.0",
 	"description": "Bento, one tier up: a typographic new tab and home page.",
 	"icons": {
 		"64": "assets/icons/tiffin.svg"
@@ -13,7 +13,6 @@
 		"homepage": "index.html"
 	},
 	"permissions": [
-		"geolocation",
 		"search",
 		"storage"
 	],
@@ -23,6 +22,9 @@
 			"strict_min_version": "142.0",
 			"data_collection_permissions": {
 				"required": [
+					"none"
+				],
+				"optional": [
 					"locationInfo"
 				]
 			}

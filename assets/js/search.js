@@ -170,6 +170,9 @@ document.addEventListener('keydown', (e) => {
 	if (e.key === '/') {
 		e.preventDefault();
 		searchInput.focus();
+	} else if (e.key === ',') {
+		e.preventDefault();
+		openSettings();
 	} else if (e.key === '?') {
 		e.preventDefault();
 		document.getElementById('shortcuts').showModal();
