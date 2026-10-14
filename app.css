@@ -1346,6 +1346,78 @@ button.list__head:focus-visible .list__pencil {
 	color: var(--muted);
 }
 
+/* Keyboard help */
+
+.focus-hint {
+	position: fixed;
+	top: 12px;
+	left: 50%;
+	transform: translateX(-50%);
+	padding: 6px 12px;
+	border-radius: 999px;
+	border: 1px solid var(--border);
+	background: var(--surface);
+	box-shadow: var(--shadow);
+	font-family: var(--font-mono);
+	font-size: 11px;
+	color: var(--muted);
+	animation: fade var(--dur-enter);
+	z-index: 20;
+}
+
+.focus-hint[hidden] {
+	display: none;
+}
+
+.focus-hint kbd {
+	margin: 0 4px;
+}
+
+.footer__help {
+	font: inherit;
+	letter-spacing: inherit;
+	color: inherit;
+	background: none;
+	border: 0;
+	padding: 0;
+	cursor: pointer;
+}
+
+.footer__help:hover {
+	color: var(--text);
+}
+
+.footer__help kbd {
+	margin-right: 6px;
+}
+
+.shortcuts__list {
+	display: grid;
+	grid-template-columns: auto 1fr;
+	gap: 8px 16px;
+	margin: 0;
+	font-size: 14px;
+}
+
+.shortcuts__list dt {
+	display: flex;
+	gap: 4px;
+	align-items: center;
+	color: var(--muted);
+}
+
+.shortcuts__list dd {
+	margin: 0;
+}
+
+.shortcuts h3 {
+	margin: 4px 0 0;
+}
+
+.shortcuts__done {
+	margin-left: auto;
+}
+
 /* Undo message */
 
 .toast {

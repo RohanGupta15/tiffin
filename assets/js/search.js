@@ -126,7 +126,10 @@ const clearSearch = () => {
 searchInput.addEventListener('input', updateSearch);
 
 searchInput.addEventListener('keydown', (e) => {
-	if (e.key === 'ArrowDown' && results.length) {
+	if (e.key === 'ArrowDown' && !results.length) {
+		e.preventDefault();
+		focusLinks();
+	} else if (e.key === 'ArrowDown' && results.length) {
 		e.preventDefault();
 		active = (active + 1) % results.length;
 		renderResults();
@@ -155,7 +158,7 @@ document.getElementById('searchIcon').append(icon('search', 18, 1.75));
 
 // Page shortcuts: / search, 1–9 pinned tiles, T theme, E edit.
 document.addEventListener('keydown', (e) => {
-	if (document.getElementById('editor').open) return;
+	if (document.querySelector('dialog[open]')) return;
 	if (e.target instanceof HTMLElement && (e.target.isContentEditable || e.target.matches('input, textarea, select'))) return;
 	if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z' && undoFn) {
 		e.preventDefault();
@@ -167,6 +170,9 @@ document.addEventListener('keydown', (e) => {
 	if (e.key === '/') {
 		e.preventDefault();
 		searchInput.focus();
+	} else if (e.key === '?') {
+		e.preventDefault();
+		document.getElementById('shortcuts').showModal();
 	} else if (e.key === 'e' || e.key === 'E') {
 		setEditing(!editing);
 	} else if (editing && e.key === 'Escape') {
@@ -180,3 +186,12 @@ document.addEventListener('keydown', (e) => {
 		toggleTheme();
 	}
 });
+
+// Firefox puts the cursor in the address bar on a new tab; say how to reach the page.
+const focusHint = document.getElementById('focusHint');
+const syncFocusHint = () => (focusHint.hidden = document.hasFocus());
+window.addEventListener('focus', syncFocusHint);
+window.addEventListener('blur', syncFocusHint);
+syncFocusHint();
+
+document.getElementById('shortcutsButton').addEventListener('click', () => document.getElementById('shortcuts').showModal());

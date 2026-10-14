@@ -309,10 +309,16 @@ const render = () => {
 // ┬┌─┌─┐┬ ┬┌┐ ┌─┐┌─┐┬─┐┌┬┐
 // ├┴┐├┤ └┬┘├┴┐│ │├─┤├┬┘ ││
 // ┴ ┴└─┘ ┴ └─┘└─┘┴ ┴┴└──┴┘
-// The links are one Tab stop; arrows move to the nearest item in that direction.
+// The links are one Tab stop; arrows move to the nearest item in that direction,
+// out to the footer buttons below and back up to search above.
+
+const LAST_FOCUS_KEY = 'tiffin-last-focus';
+const footerEl = document.querySelector('.footer');
 
 let rovingStop = null;
 const navItems = () => [...linksEl.querySelectorAll('[data-nav]')];
+// Footer buttons join arrow navigation but keep their own Tab stops.
+const arrowTargets = () => [...navItems(), ...[...footerEl.querySelectorAll('button')].filter((b) => b.offsetParent)];
 
 const setTabStop = (el) => {
 	const items = navItems();
@@ -322,8 +328,26 @@ const setTabStop = (el) => {
 
 linksEl.addEventListener('focusin', (e) => {
 	const el = e.target.closest('[data-nav]');
-	if (el && el !== rovingStop) setTabStop(el);
+	if (!el) return;
+	if (el !== rovingStop) setTabStop(el);
+	try {
+		localStorage.setItem(LAST_FOCUS_KEY, el.dataset.nav);
+	} catch (err) {
+		// Storage unavailable; arrows then start at the first tile.
+	}
 });
+
+// Focus the item used last (even in an earlier tab), or the first one.
+const focusLinks = () => {
+	let nav = null;
+	try {
+		nav = localStorage.getItem(LAST_FOCUS_KEY);
+	} catch (e) {
+		// Storage unavailable; start at the first tile.
+	}
+	const el = (nav && linksEl.querySelector(`[data-nav="${CSS.escape(nav)}"]`)) || navItems()[0];
+	if (el) el.focus();
+};
 
 const nearest = (from, [dx, dy]) => {
 	const r = from.getBoundingClientRect();
@@ -331,7 +355,7 @@ const nearest = (from, [dx, dy]) => {
 	const cy = r.top + r.height / 2;
 	let best = null;
 	let bestScore = Infinity;
-	for (const el of navItems()) {
+	for (const el of arrowTargets()) {
 		if (el === from) continue;
 		const o = el.getBoundingClientRect();
 		const ox = o.left + o.width / 2 - cx;
@@ -370,24 +394,36 @@ const reorder = (el, [dx, dy]) => {
 
 const ARROWS = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] };
 
-linksEl.addEventListener('keydown', (e) => {
-	const el = e.target.closest('[data-nav]');
-	if (!el) return;
-	if (e.key === 'Home' || e.key === 'End') {
-		e.preventDefault();
-		const items = navItems();
-		items[e.key === 'Home' ? 0 : items.length - 1].focus();
+document.addEventListener('keydown', (e) => {
+	const dir = ARROWS[e.key];
+	const homeEnd = e.key === 'Home' || e.key === 'End';
+	if ((!dir && !homeEnd) || e.ctrlKey || e.metaKey || document.querySelector('dialog[open]')) return;
+
+	const el = document.activeElement;
+	const inLinks = el && linksEl.contains(el) && el.dataset.nav;
+	const inFooter = el && footerEl.contains(el) && el.matches('button');
+	if (!inLinks && !inFooter) {
+		// Nothing focused yet: the first arrow press lands on the links.
+		if (dir && !e.altKey && (!el || el === document.body)) {
+			e.preventDefault();
+			focusLinks();
+		}
 		return;
 	}
-	const dir = ARROWS[e.key];
-	if (!dir || e.ctrlKey || e.metaKey) return;
+
 	e.preventDefault();
+	if (homeEnd) {
+		const items = navItems();
+		if (items.length) items[e.key === 'Home' ? 0 : items.length - 1].focus();
+		return;
+	}
 	if (e.altKey) {
-		if (editing) reorder(el, dir);
+		if (editing && inLinks) reorder(el, dir);
 		return;
 	}
 	const next = nearest(el, dir);
 	if (next) next.focus();
+	else if (dir[1] === -1) searchInput.focus();
 });
 
 // N in edit mode: add a link to the focused list, or a site when a tile is focused.
