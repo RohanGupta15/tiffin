@@ -886,15 +886,9 @@ kbd {
 	border-color: var(--accent);
 }
 
-.is-editing .tile__key {
-	opacity: 0;
-}
-
 .tile__edit {
-	position: absolute;
-	top: 12px;
-	right: 12px;
 	width: 26px;
+	margin: -4px -6px 0 0;
 	height: 26px;
 	display: grid;
 	place-items: center;
@@ -952,16 +946,22 @@ button.list__head:focus-visible .eyebrow {
 
 button.list__head:hover .list__pencil,
 button.list__head:focus-visible .list__pencil {
+	opacity: 1;
 	color: var(--accent);
 }
 
-/* Every list link shows a grip and a pencil, so it reads as editable */
+/* The grip always shows in edit mode; the pencil appears on hover or focus */
 .list__grip,
 .list__edit {
 	display: inline-flex;
 	align-self: center;
 	color: var(--faint);
 	opacity: 0.6;
+}
+
+.list__edit,
+.list__pencil {
+	opacity: 0;
 	transition: opacity var(--dur-fast), color var(--dur-fast);
 }
 

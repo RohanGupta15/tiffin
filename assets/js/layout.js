@@ -206,8 +206,15 @@ const renderTiles = (tiles) =>
 					onclick: editClick(() => editTile(i)),
 					...linkTargetProps(),
 				},
-				h('span', { class: 'tile__top' }, icon(button.icon), key && h('span', { class: 'tile__key' }, key)),
-				editing && h('span', { class: 'tile__edit', 'aria-hidden': 'true' }, icon('pencil', 14, 2)),
+				h(
+					'span',
+					{ class: 'tile__top' },
+					icon(button.icon),
+					// In edit mode the pencil takes the shortcut number's place
+					editing
+						? h('span', { class: 'tile__edit', 'aria-hidden': 'true' }, icon('pencil', 14, 2))
+						: key && h('span', { class: 'tile__key' }, key)
+				),
 				h(
 					'span',
 					{ class: 'tile__label' },
