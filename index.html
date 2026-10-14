@@ -21,6 +21,7 @@
       -->
 
 	<body>
+		<div class="editbar" aria-hidden="true"></div>
 		<div class="page">
 			<header class="hero rise" style="--i: 0">
 				<div class="hero__row">
@@ -76,16 +77,19 @@
 				<div class="footer__hints">
 					<span><kbd id="pinnedHint">1–6</kbd>open pinned</span>
 					<span><kbd>/</kbd>search</span>
+					<span><kbd>← ↑ → ↓</kbd>move</span>
 					<span><kbd>↑ ↓ ↵</kbd>pick a result</span>
 					<span><kbd>T</kbd>theme</span>
 					<span><kbd>E</kbd>edit</span>
 				</div>
 				<div class="footer__edit">
-					<span>Click to edit, drag to reorder</span>
+					<span><kbd>↵</kbd>edit</span>
+					<span><kbd>Alt ←→</kbd>reorder</span>
+					<span><kbd>N</kbd>add</span>
 					<button type="button" id="editExport">Export</button>
 					<button type="button" id="editImport">Import</button>
 					<button type="button" id="editReset">Reset</button>
-					<button type="button" id="editDone" class="footer__done">Done</button>
+					<button type="button" id="editDone" class="footer__done">Done <kbd>Esc</kbd></button>
 					<input type="file" id="importInput" accept="application/json,.json" hidden />
 				</div>
 				<div class="footer__buttons">
@@ -95,6 +99,8 @@
 			</footer>
 
 			<dialog class="editor" id="editor"></dialog>
+			<div class="toast" id="toast" role="status" hidden></div>
+			<p class="sr-only" id="live" aria-live="polite"></p>
 		</div>
 
 		<script src="assets/vendor/lucide.min.js"></script>

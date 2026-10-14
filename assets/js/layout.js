@@ -2,7 +2,8 @@
 // │  ├─┤└┬┘│ ││ │ │
 // ┴─┘┴ ┴ ┴ └─┘└─┘ ┴
 // Builds the tiles and lists from your saved links, collects every link for
-// search, and handles edit mode (E): click to edit, drag to reorder.
+// search, and handles edit mode (E): click or Enter to edit, drag or Alt+arrows
+// to reorder. Arrow keys move focus across tiles and lists by screen position.
 
 const PINNED = []; // tiles, in order: keys 1–9 open them
 const ALL_LINKS = []; // everything search can jump to
@@ -11,13 +12,61 @@ let LINKS = { tiles: [], lists: [] };
 let editing = false;
 let firstRender = true;
 let dragging = null;
+let focusAfterRender = null; // data-nav of the element to refocus once the DOM is rebuilt
 
 const linksEl = document.getElementById('links');
+const liveEl = document.getElementById('live');
+const toastEl = document.getElementById('toast');
+
+const announce = (text) => (liveEl.textContent = text);
 
 const commit = () => {
 	saveLinks(LINKS).catch((e) => alert(`Tiffin couldn't save your links: ${e.message}`));
 	render();
 };
+
+// ┬ ┬┌┐┌┌┬┐┌─┐
+// │ ││││ │││ │
+// └─┘┘└┘─┴┘└─┘
+
+let undoFn = null;
+let toastTimer;
+
+const hideToast = () => {
+	toastEl.hidden = true;
+	undoFn = null;
+};
+
+const undo = () => {
+	if (!undoFn) return;
+	const fn = undoFn;
+	hideToast();
+	fn();
+	announce('Restored');
+};
+
+// Deletes right away and offers Undo (button or Ctrl+Z) for a few seconds.
+const removeWithUndo = (label, fn) => {
+	const before = structuredClone(LINKS);
+	fn();
+	commit();
+	undoFn = () => {
+		LINKS = before;
+		commit();
+	};
+	toastEl.replaceChildren(
+		h('span', {}, `Deleted ${label}`),
+		h('button', { type: 'button', class: 'toast__undo', onclick: undo }, 'Undo'),
+		h('kbd', {}, 'Ctrl Z')
+	);
+	toastEl.hidden = false;
+	clearTimeout(toastTimer);
+	toastTimer = setTimeout(hideToast, 6000);
+};
+
+// ┌─┐┌┬┐┬┌┬┐┬┌┐┌┌─┐
+// ├┤  │││ │ │││││ ┬
+// └─┘─┴┘┴ ┴ ┴┘└┘└─┘
 
 // Drag one entry of `list` onto another entry of the same list to move it there.
 const sortable = (el, list, i) => {
@@ -27,7 +76,9 @@ const sortable = (el, list, i) => {
 		e.stopPropagation();
 		dragging = { list, i };
 		e.dataTransfer.effectAllowed = 'move';
+		requestAnimationFrame(() => el.classList.add('is-dragging'));
 	});
+	el.addEventListener('dragend', () => el.classList.remove('is-dragging'));
 	el.addEventListener('dragover', (e) => {
 		if (dragging && dragging.list === list) e.preventDefault();
 	});
@@ -41,7 +92,7 @@ const sortable = (el, list, i) => {
 	});
 };
 
-// In edit mode a click edits instead of following the link.
+// In edit mode a click (or Enter, or Ctrl+click) edits instead of following the link.
 const editClick = (fn) => (e) => {
 	if (!editing) return;
 	e.preventDefault();
@@ -54,8 +105,8 @@ const moveTo = (list, from, position) => {
 	list.splice(to, 0, ...list.splice(from, 1));
 };
 
-const addButton = (label, cls, onclick) =>
-	h('button', { class: `add ${cls}`, type: 'button', onclick }, icon('plus', 16, 1.75), h('span', {}, label));
+const addButton = (label, cls, nav, onclick) =>
+	h('button', { class: `add ${cls}`, type: 'button', 'data-nav': nav, onclick }, icon('plus', 16, 1.75), h('span', {}, label));
 
 const editTile = (i) => {
 	const isNew = i < 0;
@@ -78,7 +129,7 @@ const editTile = (i) => {
 			}
 			commit();
 		},
-		onDelete: !isNew && (() => (LINKS.tiles.splice(i, 1), commit())),
+		onDelete: !isNew && (() => removeWithUndo(tile.name, () => LINKS.tiles.splice(i, 1))),
 	});
 };
 
@@ -101,13 +152,7 @@ const editList = (i) => {
 			}
 			commit();
 		},
-		onDelete:
-			!isNew &&
-			(() => {
-				if (list.links.length && !confirm(`Delete "${list.title}" and its ${list.links.length} links?`)) return;
-				LINKS.lists.splice(i, 1);
-				commit();
-			}),
+		onDelete: !isNew && (() => removeWithUndo(list.title, () => LINKS.lists.splice(i, 1))),
 	});
 };
 
@@ -131,9 +176,13 @@ const editItem = (list, j) => {
 			}
 			commit();
 		},
-		onDelete: !isNew && (() => (list.links.splice(j, 1), commit())),
+		onDelete: !isNew && (() => removeWithUndo(item.name, () => list.links.splice(j, 1))),
 	});
 };
+
+// ┬─┐┌─┐┌┐┌┌┬┐┌─┐┬─┐
+// ├┬┘├┤ │││ ││├┤ ├┬┘
+// ┴└─└─┘┘└┘─┴┘└─┘┴└─
 
 const rise = (i) => (firstRender ? { class: 'rise', style: `--i: ${i}` } : {});
 
@@ -153,15 +202,12 @@ const renderTiles = (tiles) =>
 					class: `tile ${r.class || ''}`,
 					style: r.style,
 					href: button.link,
+					'data-nav': `t:${i}`,
 					onclick: editClick(() => editTile(i)),
 					...linkTargetProps(),
 				},
-				h(
-					'span',
-					{ class: 'tile__top' },
-					icon(button.icon),
-					editing ? icon('pencil', 14, 1.75) : key && h('span', { class: 'tile__key' }, key)
-				),
+				h('span', { class: 'tile__top' }, icon(button.icon), key && h('span', { class: 'tile__key' }, key)),
+				editing && h('span', { class: 'tile__edit', 'aria-hidden': 'true' }, icon('pencil', 14, 2)),
 				h(
 					'span',
 					{ class: 'tile__label' },
@@ -172,7 +218,7 @@ const renderTiles = (tiles) =>
 			sortable(el, tiles, i);
 			return el;
 		}),
-		editing && addButton('Add site', 'tile', () => editTile(-1))
+		editing && addButton('Add site', 'tile', 't:new', () => editTile(-1))
 	);
 
 const renderLists = (lists) =>
@@ -186,9 +232,19 @@ const renderLists = (lists) =>
 				{ class: `list ${r.class || ''}`, style: r.style },
 				h(
 					editing ? 'button' : 'div',
-					{ class: 'list__head', type: editing ? 'button' : null, onclick: editClick(() => editList(i)) },
-					h('span', { class: 'eyebrow' }, list.title),
-					icon(editing ? 'pencil' : list.icon, 16, 1.5)
+					{
+						class: 'list__head',
+						type: editing ? 'button' : null,
+						'data-nav': editing ? `h:${i}` : null,
+						onclick: editClick(() => editList(i)),
+					},
+					h(
+						'span',
+						{ class: 'list__title' },
+						h('span', { class: 'eyebrow' }, list.title),
+						editing && h('span', { class: 'list__pencil' }, icon('pencil', 13, 1.75))
+					),
+					icon(list.icon, 16, 1.5)
 				),
 				h(
 					'div',
@@ -197,23 +253,33 @@ const renderLists = (lists) =>
 						ALL_LINKS.push({ name: item.name, link: item.link, group: list.title });
 						const a = h(
 							'a',
-							{ class: 'list__item', href: item.link, onclick: editClick(() => editItem(list, j)), ...linkTargetProps() },
-							h('span', { class: 'list__index' }, String(j + 1).padStart(2, '0')),
-							h('span', { class: 'list__name' }, item.name)
+							{
+								class: 'list__item',
+								href: item.link,
+								'data-nav': `l:${i}:${j}`,
+								onclick: editClick(() => editItem(list, j)),
+								...linkTargetProps(),
+							},
+							editing
+								? h('span', { class: 'list__grip', 'aria-hidden': 'true' }, icon('grip-vertical', 14, 1.75))
+								: h('span', { class: 'list__index' }, String(j + 1).padStart(2, '0')),
+							h('span', { class: 'list__name' }, item.name),
+							editing && h('span', { class: 'list__edit', 'aria-hidden': 'true' }, icon('pencil', 14, 1.75))
 						);
 						sortable(a, list.links, j);
 						return a;
 					}),
-					editing && addButton('Add link', 'list__add', () => editItem(list, -1))
+					editing && addButton('Add link', 'list__add', `a:${i}`, () => editItem(list, -1))
 				)
 			);
 			sortable(el, lists, i);
 			return el;
 		}),
-		editing && addButton('Add list', 'list', () => editList(-1))
+		editing && addButton('Add list', 'list', 'h:new', () => editList(-1))
 	);
 
 const render = () => {
+	const focused = document.activeElement && linksEl.contains(document.activeElement) && document.activeElement.dataset.nav;
 	PINNED.length = 0;
 	ALL_LINKS.length = 0;
 	const groups = [];
@@ -223,9 +289,107 @@ const render = () => {
 	linksEl.replaceChildren(...groups);
 	firstRender = false;
 
+	const target = focusAfterRender || focused;
+	focusAfterRender = null;
+	setTabStop(target ? linksEl.querySelector(`[data-nav="${target}"]`) : null);
+	if (target && rovingStop) rovingStop.focus();
+
 	const hint = document.getElementById('pinnedHint');
 	hint.textContent = PINNED.length === 1 ? '1' : `1–${Math.min(PINNED.length, 9)}`;
 	hint.parentElement.hidden = !PINNED.length;
+};
+
+// ┬┌─┌─┐┬ ┬┌┐ ┌─┐┌─┐┬─┐┌┬┐
+// ├┴┐├┤ └┬┘├┴┐│ │├─┤├┬┘ ││
+// ┴ ┴└─┘ ┴ └─┘└─┘┴ ┴┴└──┴┘
+// The links are one Tab stop; arrows move to the nearest item in that direction.
+
+let rovingStop = null;
+const navItems = () => [...linksEl.querySelectorAll('[data-nav]')];
+
+const setTabStop = (el) => {
+	const items = navItems();
+	rovingStop = el && items.includes(el) ? el : items[0] || null;
+	for (const item of items) item.tabIndex = item === rovingStop ? 0 : -1;
+};
+
+linksEl.addEventListener('focusin', (e) => {
+	const el = e.target.closest('[data-nav]');
+	if (el && el !== rovingStop) setTabStop(el);
+});
+
+const nearest = (from, [dx, dy]) => {
+	const r = from.getBoundingClientRect();
+	const cx = r.left + r.width / 2;
+	const cy = r.top + r.height / 2;
+	let best = null;
+	let bestScore = Infinity;
+	for (const el of navItems()) {
+		if (el === from) continue;
+		const o = el.getBoundingClientRect();
+		const ox = o.left + o.width / 2 - cx;
+		const oy = o.top + o.height / 2 - cy;
+		const along = dx ? ox * dx : oy * dy;
+		if (along <= 4) continue;
+		const score = along + (dx ? Math.abs(oy) : Math.abs(ox)) * 2.5;
+		if (score < bestScore) [best, bestScore] = [el, score];
+	}
+	return best;
+};
+
+const gridColumns = (el) => getComputedStyle(el).gridTemplateColumns.split(' ').length;
+
+// Alt+arrows in edit mode: move the focused tile, list or link one step.
+const reorder = (el, [dx, dy]) => {
+	const [kind, a, b] = el.dataset.nav.split(':');
+	let list, i, step, nav;
+	if (kind === 't' && a !== 'new') {
+		[list, i, step] = [LINKS.tiles, +a, dx || dy * gridColumns(el.parentElement)];
+		nav = (to) => `t:${to}`;
+	} else if (kind === 'l' && dy) {
+		[list, i, step] = [LINKS.lists[+a].links, +b, dy];
+		nav = (to) => `l:${a}:${to}`;
+	} else if (kind === 'h' && a !== 'new') {
+		[list, i, step] = [LINKS.lists, +a, dx || dy];
+		nav = (to) => `h:${to}`;
+	} else return;
+	const to = i + step;
+	if (to < 0 || to >= list.length) return;
+	list.splice(to, 0, ...list.splice(i, 1));
+	focusAfterRender = nav(to);
+	commit();
+	announce(`Moved to position ${to + 1} of ${list.length}`);
+};
+
+const ARROWS = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] };
+
+linksEl.addEventListener('keydown', (e) => {
+	const el = e.target.closest('[data-nav]');
+	if (!el) return;
+	if (e.key === 'Home' || e.key === 'End') {
+		e.preventDefault();
+		const items = navItems();
+		items[e.key === 'Home' ? 0 : items.length - 1].focus();
+		return;
+	}
+	const dir = ARROWS[e.key];
+	if (!dir || e.ctrlKey || e.metaKey) return;
+	e.preventDefault();
+	if (e.altKey) {
+		if (editing) reorder(el, dir);
+		return;
+	}
+	const next = nearest(el, dir);
+	if (next) next.focus();
+});
+
+// N in edit mode: add a link to the focused list, or a site when a tile is focused.
+const addFromFocus = () => {
+	const el = document.activeElement && document.activeElement.closest('[data-nav]');
+	const [kind, a] = el && linksEl.contains(el) ? el.dataset.nav.split(':') : [];
+	if ((kind === 'l' || kind === 'a' || kind === 'h') && LINKS.lists[+a]) editItem(LINKS.lists[+a], -1);
+	else if (CONFIG.bentoLayout !== 'lists') editTile(-1);
+	else editList(-1);
 };
 
 const setEditing = (on) => {
@@ -233,6 +397,7 @@ const setEditing = (on) => {
 	document.body.classList.toggle('is-editing', on);
 	editButton.setAttribute('aria-pressed', String(on));
 	render();
+	announce(on ? 'Edit mode on. Enter edits, Alt+arrows reorders, N adds.' : 'Edit mode off');
 };
 
 // ┌─┐┌─┐┌─┐┌┬┐┌─┐┬─┐  ┌─┐┌─┐┌┬┐┬┌─┐┌┐┌┌─┐
