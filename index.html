@@ -11,6 +11,7 @@
 
 		<!-- Config + theme run before first paint so there is no flash of the wrong theme -->
 		<script src="config.js"></script>
+		<script src="assets/js/settings.js"></script>
 		<script src="assets/js/theme-init.js"></script>
 	</head>
 
@@ -96,10 +97,12 @@
 				<div class="footer__buttons">
 					<button class="footer__theme" id="editButton" type="button" aria-label="Edit links" aria-pressed="false"></button>
 					<button class="footer__theme" id="themeButton" type="button" aria-label="Switch theme"></button>
+					<button class="footer__theme" id="settingsButton" type="button" aria-label="Settings"></button>
 				</div>
 			</footer>
 
 			<dialog class="editor" id="editor"></dialog>
+			<dialog class="editor settings" id="settings" aria-label="Settings"></dialog>
 			<div class="toast" id="toast" role="status" hidden></div>
 			<p class="focus-hint" id="focusHint" hidden>Press <kbd>Tab</kbd> to use the page</p>
 
@@ -114,6 +117,7 @@
 						<dt><kbd>1</kbd>–<kbd>9</kbd></dt><dd>Open a pinned site</dd>
 						<dt><kbd>T</kbd></dt><dd>Switch theme</dd>
 						<dt><kbd>E</kbd></dt><dd>Edit links</dd>
+						<dt><kbd>,</kbd></dt><dd>Settings</dd>
 						<dt><kbd>?</kbd></dt><dd>Show this list</dd>
 					</dl>
 					<h3 class="editor__label">In edit mode</h3>
@@ -141,6 +145,7 @@
 		<script src="assets/js/weather.js"></script>
 		<script src="assets/js/theme.js"></script>
 		<script src="assets/js/search.js"></script>
+		<script src="assets/js/settings-ui.js"></script>
 	</body>
 
 	<!-- Originally developed and designed by Miguel Ávila: https://avila.sh -->
