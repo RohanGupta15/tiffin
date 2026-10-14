@@ -14,7 +14,8 @@
 	},
 	"permissions": [
 		"geolocation",
-		"search"
+		"search",
+		"storage"
 	],
 	"browser_specific_settings": {
 		"gecko": {

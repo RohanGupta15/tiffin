@@ -153,15 +153,19 @@ searchInput.addEventListener('focus', updateSearch);
 
 document.getElementById('searchIcon').append(icon('search', 18, 1.75));
 
-// Page shortcuts: / search, 1–9 pinned tiles, T theme.
+// Page shortcuts: / search, 1–9 pinned tiles, T theme, E edit.
 document.addEventListener('keydown', (e) => {
-	if (e.target === searchInput || e.ctrlKey || e.metaKey || e.altKey) return;
-	if (e.target instanceof HTMLElement && e.target.isContentEditable) return;
+	if (e.ctrlKey || e.metaKey || e.altKey || document.getElementById('editor').open) return;
+	if (e.target instanceof HTMLElement && (e.target.isContentEditable || e.target.matches('input, textarea, select'))) return;
 
 	if (e.key === '/') {
 		e.preventDefault();
 		searchInput.focus();
-	} else if (/^[1-9]$/.test(e.key) && PINNED[Number(e.key) - 1]) {
+	} else if (e.key === 'e' || e.key === 'E') {
+		setEditing(!editing);
+	} else if (editing && e.key === 'Escape') {
+		setEditing(false);
+	} else if (!editing && /^[1-9]$/.test(e.key) && PINNED[Number(e.key) - 1]) {
 		openLink(PINNED[Number(e.key) - 1].link);
 	} else if (e.key === 't' || e.key === 'T') {
 		toggleTheme();

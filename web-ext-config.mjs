@@ -6,6 +6,7 @@ export default {
 		'package.json',
 		'package-lock.json',
 		'web-ext-config.mjs',
+		'test',
 		'assets/img',
 		'assets/icons/Dark',
 		'assets/icons/Nord',
