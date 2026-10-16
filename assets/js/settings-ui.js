@@ -47,10 +47,12 @@ if (settingsSync) {
 // └─┘┴ ┴  ┴
 
 // Firefox asks once whether Tiffin may send the city to Open-Meteo. Must run inside the click.
-// Chrome and Edge have no data-collection permission; their store privacy disclosure covers it.
+// Chrome and Edge have no data-collection permission (they may still define `browser`), so ask only when
+// the manifest declares one; their store privacy disclosure covers it.
 const askLocationConsent = () => {
-	if (typeof browser === 'undefined' || !browser.permissions) return Promise.resolve(true);
-	return browser.permissions.request({ data_collection: ['locationInfo'] }).catch(() => false);
+	const declared = ext && ext.runtime && ext.runtime.getManifest().browser_specific_settings?.gecko?.data_collection_permissions;
+	if (!declared || !ext.permissions) return Promise.resolve(true);
+	return ext.permissions.request({ data_collection: ['locationInfo'] }).catch(() => false);
 };
 
 const searchCities = async (query) => {
