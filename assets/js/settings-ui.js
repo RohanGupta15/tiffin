@@ -52,12 +52,27 @@ const askLocationConsent = () => {
 	return browser.permissions.request({ data_collection: ['locationInfo'] }).catch(() => false);
 };
 
-const searchCities = async (query) => {
-	const url = `https://geocoding-api.open-meteo.com/v1/search?count=6&language=en&format=json&name=${encodeURIComponent(query)}`;
+const geocode = async (name) => {
+	const url = `https://geocoding-api.open-meteo.com/v1/search?count=6&language=en&format=json&name=${encodeURIComponent(name)}`;
 	const response = await fetch(url);
 	if (!response.ok) throw new Error(`Open-Meteo responded ${response.status}`);
-	const json = await response.json();
-	return (json.results || []).map((c) => ({
+	return (await response.json()).results || [];
+};
+
+const inRegion = (c, words) => {
+	const region = [c.admin1, c.admin2, c.admin3, c.country, c.country_code].join(' ').toLowerCase();
+	return words.every((w) => region.includes(w.toLowerCase()));
+};
+
+// Open-Meteo only matches place names, so "Paris, France" and "Sector 51 Noida" find nothing as typed.
+// Try the leading words filtered by the rest ("Paris" in France), then the trailing words alone ("Noida").
+const searchCities = async (query) => {
+	const words = query.split(/[\s,]+/).filter(Boolean);
+	let results = await geocode(query);
+	for (let i = words.length - 1; !results.length && i > 0; i--)
+		results = (await geocode(words.slice(0, i).join(' '))).filter((c) => inRegion(c, words.slice(i)));
+	for (let i = 1; !results.length && i < words.length; i++) results = await geocode(words.slice(i).join(' '));
+	return results.map((c) => ({
 		city: [c.name, c.admin1, c.country].filter(Boolean).join(', '),
 		latitude: Math.round(c.latitude * 1000) / 1000,
 		longitude: Math.round(c.longitude * 1000) / 1000,
