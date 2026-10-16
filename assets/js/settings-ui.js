@@ -4,7 +4,7 @@
 // The settings panel (gear button or ,), the first-run welcome card, and keeping
 // settings in step with Firefox Sync.
 
-const settingsSync = typeof browser !== 'undefined' && browser.storage && browser.storage.sync;
+const settingsSync = ext && ext.storage && ext.storage.sync;
 const settingsDialog = document.getElementById('settings');
 
 const writeLocalSettings = (settings) => {
@@ -37,7 +37,7 @@ if (settingsSync) {
 		if (settings) adoptSyncedSettings(settings);
 		else if (Object.keys(readLocalSettings()).length) settingsSync.set({ settings: readLocalSettings() });
 	});
-	browser.storage.onChanged.addListener((changes, area) => {
+	ext.storage.onChanged.addListener((changes, area) => {
 		if (area === 'sync' && changes.settings && changes.settings.newValue) adoptSyncedSettings(changes.settings.newValue);
 	});
 }
@@ -47,17 +47,35 @@ if (settingsSync) {
 // └─┘┴ ┴  ┴
 
 // Firefox asks once whether Tiffin may send the city to Open-Meteo. Must run inside the click.
+// Chrome and Edge have no data-collection permission (they may still define `browser`), so ask only when
+// the manifest declares one; their store privacy disclosure covers it.
 const askLocationConsent = () => {
-	if (typeof browser === 'undefined' || !browser.permissions) return Promise.resolve(true);
-	return browser.permissions.request({ data_collection: ['locationInfo'] }).catch(() => false);
+	const declared = ext && ext.runtime && ext.runtime.getManifest().browser_specific_settings?.gecko?.data_collection_permissions;
+	if (!declared || !ext.permissions) return Promise.resolve(true);
+	return ext.permissions.request({ data_collection: ['locationInfo'] }).catch(() => false);
 };
 
-const searchCities = async (query) => {
-	const url = `https://geocoding-api.open-meteo.com/v1/search?count=6&language=en&format=json&name=${encodeURIComponent(query)}`;
+const geocode = async (name) => {
+	const url = `https://geocoding-api.open-meteo.com/v1/search?count=6&language=en&format=json&name=${encodeURIComponent(name)}`;
 	const response = await fetch(url);
 	if (!response.ok) throw new Error(`Open-Meteo responded ${response.status}`);
-	const json = await response.json();
-	return (json.results || []).map((c) => ({
+	return (await response.json()).results || [];
+};
+
+const inRegion = (c, words) => {
+	const region = [c.admin1, c.admin2, c.admin3, c.country, c.country_code].join(' ').toLowerCase();
+	return words.every((w) => region.includes(w.toLowerCase()));
+};
+
+// Open-Meteo only matches place names, so "Paris, France" and "Sector 51 Noida" find nothing as typed.
+// Try the leading words filtered by the rest ("Paris" in France), then the trailing words alone ("Noida").
+const searchCities = async (query) => {
+	const words = query.split(/[\s,]+/).filter(Boolean);
+	let results = await geocode(query);
+	for (let i = words.length - 1; !results.length && i > 0; i--)
+		results = (await geocode(words.slice(0, i).join(' '))).filter((c) => inRegion(c, words.slice(i)));
+	for (let i = 1; !results.length && i < words.length; i++) results = await geocode(words.slice(i).join(' '));
+	return results.map((c) => ({
 		city: [c.name, c.admin1, c.country].filter(Boolean).join(', '),
 		latitude: Math.round(c.latitude * 1000) / 1000,
 		longitude: Math.round(c.longitude * 1000) / 1000,

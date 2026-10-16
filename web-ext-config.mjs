@@ -8,6 +8,8 @@ export default {
 		'web-ext-config.mjs',
 		'test',
 		'docs',
+		'dist',
+		'scripts',
 		'.github',
 		'assets/img',
 		'assets/icons/Dark',
