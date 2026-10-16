@@ -30,8 +30,8 @@ const scoreLink = (q, link) => {
 const looksLikeAddress = (q) => /^(https?:\/\/)?[^\s.]+\.[^\s]{2,}$/i.test(q);
 
 const webSearch = (text) => {
-	if (typeof browser !== 'undefined' && browser.search && browser.search.query) {
-		browser.search.query({ text, disposition: CONFIG.openInNewTab ? 'NEW_TAB' : 'CURRENT_TAB' });
+	if (ext && ext.search && ext.search.query) {
+		ext.search.query({ text, disposition: CONFIG.openInNewTab ? 'NEW_TAB' : 'CURRENT_TAB' });
 	} else {
 		openLink(CONFIG.searchUrl.replace('%s', encodeURIComponent(text)));
 	}
