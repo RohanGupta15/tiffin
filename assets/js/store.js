@@ -5,7 +5,9 @@
 // Firefox Sync storage (or localStorage when Tiffin runs as a plain web page).
 
 const LOCAL_KEY = 'tiffin-links';
-const syncStorage = typeof browser !== 'undefined' && browser.storage && browser.storage.sync;
+// Firefox exposes `browser`, Chrome and Edge `chrome`; both return promises in MV3. The later scripts use it too.
+const ext = globalThis.browser ?? globalThis.chrome;
+const syncStorage = ext && ext.storage && ext.storage.sync;
 
 // 'github.com' → 'https://github.com/'. Anything that isn't http(s) → '' (blocks javascript: links).
 const normalizeUrl = (value) => {
@@ -67,6 +69,6 @@ const resetLinks = () =>
 
 // Another device (via Sync) or another tab changed the links.
 const onLinksChanged = (fn) => {
-	if (syncStorage) browser.storage.onChanged.addListener((c, area) => area === 'sync' && (c.tiles || c.lists) && fn());
+	if (syncStorage) ext.storage.onChanged.addListener((c, area) => area === 'sync' && (c.tiles || c.lists) && fn());
 	else window.addEventListener('storage', (e) => e.key === LOCAL_KEY && fn());
 };

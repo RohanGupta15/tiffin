@@ -4,7 +4,7 @@
 // The settings panel (gear button or ,), the first-run welcome card, and keeping
 // settings in step with Firefox Sync.
 
-const settingsSync = typeof browser !== 'undefined' && browser.storage && browser.storage.sync;
+const settingsSync = ext && ext.storage && ext.storage.sync;
 const settingsDialog = document.getElementById('settings');
 
 const writeLocalSettings = (settings) => {
@@ -37,7 +37,7 @@ if (settingsSync) {
 		if (settings) adoptSyncedSettings(settings);
 		else if (Object.keys(readLocalSettings()).length) settingsSync.set({ settings: readLocalSettings() });
 	});
-	browser.storage.onChanged.addListener((changes, area) => {
+	ext.storage.onChanged.addListener((changes, area) => {
 		if (area === 'sync' && changes.settings && changes.settings.newValue) adoptSyncedSettings(changes.settings.newValue);
 	});
 }
@@ -47,6 +47,7 @@ if (settingsSync) {
 // └─┘┴ ┴  ┴
 
 // Firefox asks once whether Tiffin may send the city to Open-Meteo. Must run inside the click.
+// Chrome and Edge have no data-collection permission; their store privacy disclosure covers it.
 const askLocationConsent = () => {
 	if (typeof browser === 'undefined' || !browser.permissions) return Promise.resolve(true);
 	return browser.permissions.request({ data_collection: ['locationInfo'] }).catch(() => false);
