@@ -1,21 +1,30 @@
-# Push a tag like v2.1.0 (matching manifest.json) to test, sign and submit the new
-# version to addons.mozilla.org, and attach the package to a GitHub release.
-# Needs repo secrets AMO_JWT_ISSUER and AMO_JWT_SECRET (AMO developer hub → API keys).
-# The first listing is submitted by hand on AMO; this handles every version after it.
+# Every merge to master tests Tiffin, picks the next version from the commit titles since the
+# last v* tag (see scripts/next-version.mjs), builds the Firefox and Chrome/Edge zips with it,
+# and publishes both as a GitHub release. The version lives in the tags: manifest.json is only
+# updated inside the build, so nothing is committed back and dev never falls behind master.
+# Store uploads stay manual: AMO takes the Firefox zip, Chrome Web Store and Edge the Chrome zip.
 name: Release
 
 on:
   push:
-    tags: ['v*']
+    branches: [master]
+  workflow_dispatch:
 
 permissions:
   contents: write
+
+# Two quick merges must not both claim the same version.
+concurrency:
+  group: release
+  cancel-in-progress: false
 
 jobs:
   release:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # tags and history, to pick the version
 
       - uses: actions/setup-node@v4
         with:
@@ -24,22 +33,28 @@ jobs:
 
       - run: npm ci
 
-      - name: Tag matches manifest version
-        run: test "v$(node -p "require('./manifest.json').version")" = "$GITHUB_REF_NAME"
-
       - run: npm test
+
+      - name: Pick the version
+        id: version
+        run: echo "version=$(node scripts/next-version.mjs)" >> "$GITHUB_OUTPUT"
+
+      - name: Write it into the manifest
+        run: |
+          npm version "${{ steps.version.outputs.version }}" --no-git-tag-version --allow-same-version
+          node -e "const f='manifest.json',fs=require('fs'),m=JSON.parse(fs.readFileSync(f));m.version=process.argv[1];fs.writeFileSync(f,JSON.stringify(m,null,'\t')+'\n')" "${{ steps.version.outputs.version }}"
 
       - run: npx web-ext lint --warnings-as-errors
 
       - run: npm run build
 
-      - name: Submit to addons.mozilla.org
-        run: npx web-ext sign --channel listed --approval-timeout 0 --api-key "$AMO_JWT_ISSUER" --api-secret "$AMO_JWT_SECRET"
-        env:
-          AMO_JWT_ISSUER: ${{ secrets.AMO_JWT_ISSUER }}
-          AMO_JWT_SECRET: ${{ secrets.AMO_JWT_SECRET }}
+      - run: npm run build:chrome
 
       - name: GitHub release
-        run: gh release create "$GITHUB_REF_NAME" web-ext-artifacts/*.zip --generate-notes
+        run: |
+          v="${{ steps.version.outputs.version }}"
+          gh release create "v$v" --target "$GITHUB_SHA" --title "Tiffin $v" --generate-notes \
+            "web-ext-artifacts/tiffin-firefox-$v.zip#Firefox (upload to addons.mozilla.org)" \
+            "web-ext-artifacts/tiffin-chrome-$v.zip#Chrome and Edge (upload to the store, or unzip and Load unpacked)"
         env:
           GH_TOKEN: ${{ github.token }}
