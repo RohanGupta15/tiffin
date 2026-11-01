@@ -13,6 +13,6 @@
     "test": "node --test test/*.test.js"
   },
   "devDependencies": {
-    "web-ext": "^10.7.0"
+    "web-ext": "^10.8.0"
   }
 }

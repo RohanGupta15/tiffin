@@ -475,9 +475,9 @@ importInput.addEventListener('change', async () => {
 });
 
 document.getElementById('editReset').addEventListener('click', async () => {
-	if (!confirm('Replace all your pinned sites and lists with the defaults from config.js?')) return;
+	if (!confirm('Replace all your pinned sites and lists with your most-visited sites and bookmarks?')) return;
 	await resetLinks();
-	LINKS = defaultLinks();
+	LINKS = await loadLinks();
 	render();
 });
 
