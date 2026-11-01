@@ -13,8 +13,10 @@
 		"homepage": "index.html"
 	},
 	"permissions": [
+		"bookmarks",
 		"search",
-		"storage"
+		"storage",
+		"topSites"
 	],
 	"browser_specific_settings": {
 		"gecko": {

@@ -190,11 +190,12 @@ document.addEventListener('keydown', (e) => {
 	}
 });
 
-// Firefox puts the cursor in the address bar on a new tab; say how to reach the page.
+// Browsers put the cursor in the address bar on a new tab and extensions can't take it; say how to reach the page.
+// Shown on every new tab until the page gets its first key press or click.
 const focusHint = document.getElementById('focusHint');
-const syncFocusHint = () => (focusHint.hidden = document.hasFocus());
-window.addEventListener('focus', syncFocusHint);
-window.addEventListener('blur', syncFocusHint);
-syncFocusHint();
+focusHint.hidden = false;
+const hideFocusHint = () => (focusHint.hidden = true);
+document.addEventListener('keydown', hideFocusHint, { once: true });
+document.addEventListener('pointerdown', hideFocusHint, { once: true });
 
 document.getElementById('shortcutsButton').addEventListener('click', () => document.getElementById('shortcuts').showModal());

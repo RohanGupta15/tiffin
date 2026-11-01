@@ -1,12 +1,13 @@
 # Tiffin privacy policy
 
-_Last updated: 14 October 2026_
+_Last updated: 1 November 2026_
 
 Tiffin is a new tab and home page for Firefox. It has no account, no analytics and no tracking, and its developer receives none of your data.
 
 ## What stays in your browser
 
 - **Your links, lists and settings** (including the name you enter) are saved with Firefox's extension storage. If you use Firefox Sync, Firefox syncs them to your other devices through your Firefox account. Tiffin's developer cannot see them.
+- **Your most-visited sites and bookmarks bar**: on first install (and when you press Reset), Tiffin reads them once to set up your pinned sites and lists. They are read inside your browser and never sent anywhere.
 - **Search**: when you search from Tiffin, the text goes to the search engine you chose in Firefox, exactly as if you had used the address bar.
 
 ## What leaves your browser, and only if you turn on weather
