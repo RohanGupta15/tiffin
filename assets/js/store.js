@@ -104,9 +104,12 @@ const loadLinks = async () => {
 			? await syncStorage.get(['tiles', 'lists'])
 			: JSON.parse(localStorage.getItem(LOCAL_KEY) || '{}');
 		if (!saved.tiles && !saved.lists && syncStorage) {
-			// Saved straight away so the tiles don't reshuffle as browsing changes the top sites.
+			// Kept on this device only: on a second device Sync may not have delivered the real
+			// links yet, and they must win. Cached so tiles don't reshuffle as browsing changes.
+			const local = await ext.storage.local.get('imported');
+			if (local.imported) return cleanLinks(local.imported);
 			const imported = await browserLinks(defaults);
-			await saveLinks(imported);
+			await ext.storage.local.set({ imported });
 			return imported;
 		}
 		const clean = cleanLinks(saved);
@@ -121,7 +124,7 @@ const saveLinks = (links) =>
 	syncStorage ? syncStorage.set(links) : Promise.resolve(localStorage.setItem(LOCAL_KEY, JSON.stringify(links)));
 
 const resetLinks = () =>
-	syncStorage ? syncStorage.remove(['tiles', 'lists']) : Promise.resolve(localStorage.removeItem(LOCAL_KEY));
+	syncStorage ? Promise.all([syncStorage.remove(['tiles', 'lists']), ext.storage.local.remove('imported')]) :Promise.resolve(localStorage.removeItem(LOCAL_KEY));
 
 // Another device (via Sync) or another tab changed the links.
 const onLinksChanged = (fn) => {
