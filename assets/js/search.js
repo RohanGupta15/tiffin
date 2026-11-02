@@ -50,6 +50,7 @@ const buildResults = (query) => {
 			label: link.name,
 			detail: [link.group, domainOf(link.link)].filter(Boolean).join(' · '),
 			icon: link.icon,
+			href: link.link,
 			key: link.key,
 			run: () => openLink(link.link),
 		}));
@@ -81,7 +82,8 @@ const renderResults = () => {
 	searchResults.replaceChildren(
 		...results.map((r, i) => {
 			const isActive = i === active;
-			const badge = r.kind === 'link' && !r.icon ? r.label.charAt(0) : icon(r.icon || 'link', 14, 1.75);
+			const badge =
+				r.kind === 'link' && !r.icon ? r.label.charAt(0) : r.icon === 'site' ? siteIcon(r.href, r.label, 14) : icon(r.icon || 'link', 14, 1.75);
 			return h(
 				'div',
 				{

@@ -209,7 +209,7 @@ const renderTiles = (tiles) =>
 				h(
 					'span',
 					{ class: 'tile__top' },
-					icon(button.icon),
+					button.icon === 'site' ? siteIcon(button.link, button.name) : icon(button.icon),
 					// In edit mode the pencil takes the shortcut number's place
 					editing
 						? h('span', { class: 'tile__edit', 'aria-hidden': 'true' }, icon('pencil', 14, 2))
@@ -481,7 +481,7 @@ document.getElementById('editReset').addEventListener('click', async () => {
 	render();
 });
 
-loadLinks().then((links) => {
+Promise.all([loadLinks(), loadFavicons()]).then(([links]) => {
 	LINKS = links;
 	render();
 });
