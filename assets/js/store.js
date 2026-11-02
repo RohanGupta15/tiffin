@@ -67,7 +67,7 @@ const importedLinks = (topSites, bar, defaults) => {
 	};
 	const tiles = (topSites || [])
 		.filter((s) => fresh(s.url))
-		.map((s) => ({ name: siteName(s.title, s.url), icon: 'globe', link: s.url }));
+		.map((s) => ({ name: siteName(s.title, s.url), icon: 'site', link: s.url }));
 	const fill = defaults.tiles.filter((t) => fresh(t.link));
 	const want = defaults.tiles.length;
 
@@ -98,6 +98,14 @@ const browserLinks = async (defaults) => {
 	// 'Work' → briefcase, 'Dev' → code; guessIcons lives in editor.js, loaded by the time this runs.
 	for (const l of links.lists) if (l.icon === 'folder') l.icon = guessIcons(l.title)[0] || 'folder';
 	return links;
+};
+
+// Firefox only (Chrome uses /_favicon/): domain → favicon data URL, from the browser's own top sites.
+const FAVICONS = {};
+const loadFavicons = async () => {
+	if (!globalThis.browser || !ext.topSites) return;
+	const sites = await ext.topSites.get({ includeFavicon: true, limit: 100 }).catch(() => []);
+	for (const s of sites) if (s.favicon) FAVICONS[domainOf(s.url)] = s.favicon;
 };
 
 // True after loadLinks built the links from the browser, so the page can say so once.
@@ -131,7 +139,7 @@ const saveLinks = (links) =>
 	syncStorage ? syncStorage.set(links) : Promise.resolve(localStorage.setItem(LOCAL_KEY, JSON.stringify(links)));
 
 const resetLinks = () =>
-	syncStorage ? Promise.all([syncStorage.remove(['tiles', 'lists']), ext.storage.local.remove('imported')]) :Promise.resolve(localStorage.removeItem(LOCAL_KEY));
+	syncStorage ? Promise.all([syncStorage.remove(['tiles', 'lists']), ext.storage.local.remove('imported')]) : Promise.resolve(localStorage.removeItem(LOCAL_KEY));
 
 // Another device (via Sync) or another tab changed the links.
 const onLinksChanged = (fn) => {

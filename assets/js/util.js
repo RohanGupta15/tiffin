@@ -30,6 +30,19 @@ const icon = (name, size = 22, strokeWidth = 1.5) => {
 	return svg;
 };
 
+// Tiles with icon 'site' show the site's own favicon, or its first letter when the browser has none.
+// Chrome serves cached favicons from the extension's /_favicon/ route; Firefox hands them over with the
+// top sites, kept in FAVICONS (store.js). Neither touches the network.
+const siteIcon = (link, name, size = 22) => {
+	const src = globalThis.browser
+		? FAVICONS[domainOf(link)]
+		: globalThis.chrome && chrome.runtime && chrome.runtime.getURL(`/_favicon/?pageUrl=${encodeURIComponent(link)}&size=${size * 2}`);
+	const letter = h('span', { class: 'site-icon__letter', style: `--size: ${size}px`, 'aria-hidden': 'true' }, (name || '?').charAt(0).toUpperCase());
+	if (!src) return letter;
+	const img = h('img', { class: 'site-icon', src, width: size, height: size, alt: '', onerror: () => img.replaceWith(letter) });
+	return img;
+};
+
 const domainOf = (url) => {
 	try {
 		return new URL(url).hostname.replace(/^www\./, '');

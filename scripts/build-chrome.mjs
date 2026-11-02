@@ -11,6 +11,8 @@ const skip = new Set([...config.ignoreFiles, 'dist', 'scripts', 'node_modules', 
 // Chrome only lets the homepage point at a domain verified in Search Console, so Tiffin replaces the new tab only.
 delete manifest.chrome_settings_overrides;
 manifest.description = 'Bento, one tier up: a typographic new tab page.';
+// Chrome-only: lets tiles show the browser's cached favicons (Firefox gets them from topSites).
+manifest.permissions.push('favicon');
 // Firefox-only: the add-on id and its data-collection consent.
 delete manifest.browser_specific_settings;
 // Chrome doesn't accept SVG icons.

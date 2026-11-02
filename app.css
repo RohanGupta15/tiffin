@@ -614,6 +614,25 @@ kbd {
 	box-shadow: var(--shadow-hover), var(--ring);
 }
 
+.site-icon {
+	border-radius: 6px;
+	object-fit: contain;
+}
+
+.site-icon__letter {
+	display: grid;
+	place-items: center;
+	width: var(--size);
+	height: var(--size);
+	border-radius: 6px;
+	background: var(--accent-soft);
+	color: var(--accent);
+	font-family: var(--font-ui);
+	font-size: calc(var(--size) * 0.55);
+	font-weight: 600;
+	line-height: 1;
+}
+
 .tile:hover > .tile__top > svg,
 .tile:focus-visible > .tile__top > svg {
 	color: var(--accent);
