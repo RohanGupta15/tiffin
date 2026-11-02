@@ -114,12 +114,16 @@ const searchIcons = (q) =>
 	[...new Set([...synonymsFor(q), ...ICON_NAMES.filter((n) => n.startsWith(q)), ...ICON_NAMES.filter((n) => n.includes(q))])].filter(hasIcon);
 
 // Icons that probably fit this link, from its name and domain, then the everyday ones.
-const suggestIcons = (values) => {
-	const words = `${values.name || values.title || ''} ${domainOf(normalizeUrl(values.link))}`
+const guessIcons = (text) =>
+	String(text)
 		.toLowerCase()
 		.split(/[^a-z]+/)
-		.filter((w) => w.length > 2 && !['com', 'www', 'org', 'net', 'app'].includes(w));
-	const guessed = words.flatMap((w) => [...(ICON_SYNONYMS[w] || []), ...ICON_NAMES.filter((n) => n === w || n.startsWith(`${w}-`))]);
+		.filter((w) => w.length > 2 && !['com', 'www', 'org', 'net', 'app'].includes(w))
+		.flatMap((w) => [...(ICON_SYNONYMS[w] || []), ...ICON_NAMES.filter((n) => n === w || n.startsWith(`${w}-`))])
+		.filter(hasIcon);
+
+const suggestIcons = (values) => {
+	const guessed = guessIcons(`${values.name || values.title || ''} ${domainOf(normalizeUrl(values.link))}`);
 	return [...new Set([values.icon, ...guessed, ...COMMON_ICONS])].filter(hasIcon).slice(0, 12);
 };
 

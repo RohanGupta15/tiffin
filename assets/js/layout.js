@@ -45,23 +45,28 @@ const undo = () => {
 	announce('Restored');
 };
 
-// Deletes right away and offers Undo (button or Ctrl+Z) for a few seconds.
-const removeWithUndo = (label, fn) => {
-	const before = structuredClone(LINKS);
-	fn();
-	commit();
+// Shows a message whose Undo (button or Ctrl+Z) puts `before` back.
+const offerUndo = (message, before, ms = 6000) => {
 	undoFn = () => {
 		LINKS = before;
 		commit();
 	};
 	toastEl.replaceChildren(
-		h('span', {}, `Deleted ${label}`),
+		h('span', {}, message),
 		h('button', { type: 'button', class: 'toast__undo', onclick: undo }, 'Undo'),
 		h('kbd', {}, 'Ctrl Z')
 	);
 	toastEl.hidden = false;
 	clearTimeout(toastTimer);
-	toastTimer = setTimeout(hideToast, 6000);
+	toastTimer = setTimeout(hideToast, ms);
+};
+
+// Deletes right away and offers Undo for a few seconds.
+const removeWithUndo = (label, fn) => {
+	const before = structuredClone(LINKS);
+	fn();
+	commit();
+	offerUndo(`Deleted ${label}`, before);
 };
 
 // ┌─┐┌┬┐┬┌┬┐┬┌┐┌┌─┐
@@ -303,6 +308,11 @@ const render = () => {
 
 	const hint = document.getElementById('pinnedHint');
 	hint.textContent = PINNED.length === 1 ? '1' : `1–${Math.min(PINNED.length, 9)}`;
+	// The Tab hint teaches the number keys when there are pinned sites to open.
+	document.getElementById('focusHint').replaceChildren(
+		'Press ', h('kbd', {}, 'Tab'),
+		...(PINNED.length ? [', then ', h('kbd', {}, hint.textContent), ' to open a site'] : [' to use the page'])
+	);
 	hint.parentElement.hidden = !PINNED.length;
 };
 
@@ -479,11 +489,20 @@ document.getElementById('editReset').addEventListener('click', async () => {
 	await resetLinks();
 	LINKS = await loadLinks();
 	render();
+	announceImport();
 });
+
+// Says once that the links came from the browser; Undo swaps in the starter sites instead.
+const announceImport = () => {
+	if (!justImported) return;
+	justImported = false;
+	offerUndo('Set up from your most-visited sites and bookmarks. Press E to edit.', defaultLinks(), 12000);
+};
 
 loadLinks().then((links) => {
 	LINKS = links;
 	render();
+	announceImport();
 });
 
 onLinksChanged(async () => {

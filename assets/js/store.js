@@ -94,8 +94,14 @@ const browserLinks = async (defaults) => {
 		ext.bookmarks ? ext.bookmarks.getTree().catch(() => []) : [],
 	]);
 	const bar = ((tree[0] && tree[0].children) || []).find((n) => n.id === 'toolbar_____' || n.id === '1');
-	return importedLinks(sites, bar, defaults);
+	const links = importedLinks(sites, bar, defaults);
+	// 'Work' → briefcase, 'Dev' → code; guessIcons lives in editor.js, loaded by the time this runs.
+	for (const l of links.lists) if (l.icon === 'folder') l.icon = guessIcons(l.title)[0] || 'folder';
+	return links;
 };
+
+// True after loadLinks built the links from the browser, so the page can say so once.
+let justImported = false;
 
 const loadLinks = async () => {
 	const defaults = defaultLinks();
@@ -110,6 +116,7 @@ const loadLinks = async () => {
 			if (local.imported) return cleanLinks(local.imported);
 			const imported = await browserLinks(defaults);
 			await ext.storage.local.set({ imported });
+			justImported = true;
 			return imported;
 		}
 		const clean = cleanLinks(saved);
